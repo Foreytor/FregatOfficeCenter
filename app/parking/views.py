@@ -1,4 +1,5 @@
 from typing import List
+from django.db.models.sql.where import OR
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -11,20 +12,28 @@ from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin
 
 
-
-@login_required(redirect_field_name='login')
-def index(request):
-
-    context = {'bbs': 'dfg'}
-    return render(request, "parking/index.html", context)
-
 @method_decorator(login_required, name='dispatch')
-class Index(ListView):
+class Index(UserPassesTestMixin, ListView):
     model = Parkings
     template_name = "parking/index.html"
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        manager = self.request.user.groups.filter(name='Manager').exists()
+        context['manager'] = manager
+        return context
+
+    def test_func(self):
+        if self.request.user.groups.filter(name='Manager').exists() or self.request.user.groups.filter(name='Employee').exists():
+            result = True
+        else:
+            result = False
+        return result
+
     
 @method_decorator(login_required, name='dispatch')
-class ParkingDetal(DetailView):
+class ParkingDetal(UserPassesTestMixin, DetailView):
     model = Parkings
     template_name = "parking/parkingDetal.html"
 
@@ -36,9 +45,11 @@ class ParkingDetal(DetailView):
         form = ParkingReservationForm()
         form.fields['parking_id'].label = ''
         form.fields['parking_id'].initial = id_parking
-        #form = TestnForm()
-        #form.fields['nametest'].widget = DateTimePickerInput(format='%m/%d/%Y')
         context['parkingReservationForm'] = form
+        manager = self.request.user.groups.filter(name='Manager').exists()
+        context['manager'] = manager     
+        employee = self.request.user.groups.filter(name='Employee').exists()
+        context['employee'] = employee
         return context
     
 
@@ -49,6 +60,16 @@ class ParkingDetal(DetailView):
     #        return self.form_valid(form)
     #    else:
     #        return self.form_invalid(form)
+
+
+    def test_func(self):
+        if self.request.user.groups.filter(name='Manager').exists() or self.request.user.groups.filter(name='Employee').exists():
+            result = True
+        else:
+            result = False
+        return result
+
+
 @method_decorator(login_required, name='dispatch')
 class ParkingTimeCreate(CreateView):
     model = ParkingsTime

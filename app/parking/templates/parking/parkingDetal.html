@@ -21,7 +21,11 @@
 <ul>
     {% for Parking in ParkingsTimeList %}
         <li>| {{ Parking.user }} | {{ Parking.parkingName }} | 
-            {{ Parking.starDateTime }} | {{ Parking.stopDateTime }} | <a href="{% url 'timeEdir' Parking.pk %}">Изменить</a>
+            {{ Parking.starDateTime }} | {{ Parking.stopDateTime }} | 
+            {% if manager %}
+                <a href="{% url 'timeEdir' Parking.pk %} ">Изменить</a> | 
+            {% endif %}
+
         </li>
     {% endfor %}
 </ul>

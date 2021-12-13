@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+
+{% comment %}
+{% load static %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+ 
+
+{{ parkingReservationForm.media }}
+{% endcomment %}  
+
+
+{% block content %}
+
+
+
+<h2>Парковочное место - {{ object.parkingName }}</h2>
+<p>Описание: {{ object.description }}</p>
+<ul>
+    {% for Parking in ParkingsTimeList %}
+        <li>| {{ Parking.user }} | {{ Parking.parkingName }} | 
+            {{ Parking.starDateTime }} | {{ Parking.stopDateTime }} | <a href="{% url 'timeEdir' Parking.pk %}">Изменить</a>
+        </li>
+    {% endfor %}
+</ul>
+
+
+<h2>New post</h2>
+    <form action="{% url 'ParkingAdd' %}" method="post">{% csrf_token %}
+  {{ parkingReservationForm.as_p }}
+        {% comment %}
+  
+    {% bootstrap_form parkingReservationForm %}
+        
+        {% endcomment %}        
+      <button type="submit">Save</button>
+      
+    </form>
+
+
+
+
+
+
+{% endblock %}
+
+{% block bot %}
+
+{% endblock %}

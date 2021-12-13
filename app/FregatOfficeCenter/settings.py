@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'parking',
+    'bootstrap_datepicker_plus',
+    'bootstrap4',
 ]
 
 MIDDLEWARE = [
@@ -144,3 +146,7 @@ LOGIN_REDIRECT_URL = "/index"
 LOGOUT_REDIRECT_URL = "/index"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+BOOTSTRAP4 = {
+    'include_jquery': 'full',
+}

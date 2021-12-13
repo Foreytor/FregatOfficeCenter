@@ -1,3 +1,18 @@
 {% extends 'base.html' %}
 
-{% block content %}Контент из index{% endblock %}
+{% block content %}
+
+<h2>Парковочные места</h2>
+<ul>
+    {% for Parkings in object_list %}
+        <li> <a href="{% url 'ParkingDetal' Parkings.pk %}">{{ Parkings.parkingName }}</a>  || {{ Parkings.description }}  || <a href="{% url 'PlaceEdir' Parkings.pk %}">Изменить</a>   ||  <a href="{% url 'PlaceDelete' Parkings.pk %}">Удалить</a></li>
+    {% endfor %}
+</ul>
+
+<p><a href="{% url 'PlaceAdd' %}">Добавить</a></p>
+
+
+
+
+{% endblock %}
+

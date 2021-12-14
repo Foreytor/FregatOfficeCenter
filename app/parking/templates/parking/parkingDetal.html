@@ -1,45 +1,48 @@
 {% extends 'base.html' %}
 
-
-{% comment %}
-{% load static %}
-{% load bootstrap4 %}
-{% bootstrap_css %}
-{% bootstrap_javascript jquery='full' %}
- 
-
-{{ parkingReservationForm.media }}
-{% endcomment %}  
-
-
 {% block content %}
 
 
 
 <h2>Парковочное место - {{ object.parkingName }}</h2>
 <p>Описание: {{ object.description }}</p>
-<ul>
+
+<table class="table">
+    <thead>
+        <tr>
+          <th scope="col">Пользователь</th>
+          <th scope="col">Название</th>
+          <th scope="col">Дата начала аренды</th>
+          <th scope="col">Дата конца аренды</th>
+          {% if manager %}
+          <th scope="col">Изменить</th>
+          <th scope="col">Удалить</th>
+          {% endif %}
+        </tr>
+      </thead>
+    <tbody>
     {% for Parking in ParkingsTimeList %}
-        <li>| {{ Parking.user }} | {{ Parking.parkingName }} | 
-            {{ Parking.starDateTime }} | {{ Parking.stopDateTime }} | 
+        <tr>
+            <td>{{ Parking.user }}</td>
+            <td>{{ Parking.parkingName }}</td>
+            <td>{{ Parking.starDateTime }}</td>
+            <td>{{ Parking.stopDateTime }}</td>
+
             {% if manager %}
-                <a href="{% url 'timeEdir' Parking.pk %} ">Изменить</a> | 
+                <td><a href="{% url 'timeEdir' Parking.pk %} " class="btn btn-primary">Изменить</a></td>
+                <td><a href="{% url 'PlaceTimeDelete' Parking.pk %} " class="btn btn-danger">Удалить</a></td>
             {% endif %}
-
-        </li>
+        </tr>
     {% endfor %}
-</ul>
+</tbody>
+</table>
 
 
-<h2>New post</h2>
+<h2>Забронировать</h2>
+    {{ statusAdd }}
     <form action="{% url 'ParkingAdd' %}" method="post">{% csrf_token %}
-  {{ parkingReservationForm.as_p }}
-        {% comment %}
-  
-    {% bootstrap_form parkingReservationForm %}
-        
-        {% endcomment %}        
-      <button type="submit">Save</button>
+  {{ parkingReservationForm.as_p }}       
+      <button type="submit" class="btn btn-primary">Забранировать</button>
       
     </form>
 

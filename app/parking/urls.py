@@ -15,15 +15,25 @@ Including another URLconf
 """
 
 from django.urls import path
-from .views import *
+from .views import Index, ParkingDetal, ParkingTimeCreate, \
+    ParkingCreate, ParkingUpdate, ParkingDelete, \
+    ParkingTimeUpdate, ParkingTimeDelete
+
 
 urlpatterns = [
-    path('',  Index.as_view(), name="home"),
-    path('parking/<int:pk>/delete/', ParkingDelete.as_view(), name='PlaceDelete'),
-    path('parking/<int:pk>/', ParkingDetal.as_view(), name='ParkingDetal'),
-    path('parking/add/', ParkingTimeCreate.as_view(), name='ParkingAdd'),
-    path('parking/placeadd/', ParkingCreate.as_view(), name='PlaceAdd'),
-    path('parking/placeedit/<int:pk>', ParkingUpdate.as_view(), name='PlaceEdir'),
-    path('parking/timeedit/<int:pk>', ParkingTimeUpdate.as_view(), name='timeEdir'),
-    
+    path('', Index.as_view(), name="home"),
+    path('parking/<int:pk>/delete/',
+         ParkingDelete.as_view(), name='PlaceDelete'),
+    path('parking/<int:pk>/deletetime/',
+         ParkingTimeDelete.as_view(), name='PlaceTimeDelete'),
+    path('parking/<int:pk>/',
+         ParkingDetal.as_view(), name='ParkingDetal'),
+    path('parking/add/',
+         ParkingTimeCreate.as_view(), name='ParkingAdd'),
+    path('parking/placeadd/',
+         ParkingCreate.as_view(), name='PlaceAdd'),
+    path('parking/placeedit/<int:pk>',
+         ParkingUpdate.as_view(), name='PlaceEdir'),
+    path('parking/timeedit/<int:pk>',
+         ParkingTimeUpdate.as_view(), name='timeEdir'),
 ]

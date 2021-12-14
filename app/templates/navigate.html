@@ -11,7 +11,7 @@
               {% if request.user.is_authenticated %}
             <span class="navbar-text">Добро пожаловать, {{ user.username }} | </span> <a class="nav-link active" href="{% url 'logout' %}">Выход</a>
             {% else %}
-            <a class="nav-link active" href="{% url 'login' %}">Login</a>
+            <a class="nav-link active" href="{% url 'login' %}">Вход</a>
             {% endif %}
     </div>
   </nav>

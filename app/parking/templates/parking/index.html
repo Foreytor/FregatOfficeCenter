@@ -3,19 +3,33 @@
 {% block content %}
 
 <h2>Парковочные места</h2>
-<ul>
+<table class="table">
+    <thead>
+        <tr>
+          <th scope="col">Название</th>
+          <th scope="col">Описание</th>
+          {% if manager %}
+          <th scope="col">Изменить</th>
+          <th scope="col">Удалить</th>
+          {% endif %}
+        </tr>
+      </thead>
+    <tbody>
     {% for Parkings in object_list %}
-        <li> <a href="{% url 'ParkingDetal' Parkings.pk %}">{{ Parkings.parkingName }}</a>  || {{ Parkings.description }}  || 
-
+    <tr>
+        <td><a href="{% url 'ParkingDetal' Parkings.pk %}">{{ Parkings.parkingName }}</a></td>
+        <td>{{ Parkings.description }}</td>
             {% if manager %}
-                <a href="{% url 'PlaceEdir' Parkings.pk %}">Изменить</a>   ||  <a href="{% url 'PlaceDelete' Parkings.pk %}">Удалить</a>
+            <td><a href="{% url 'PlaceEdir' Parkings.pk %}" class="btn btn-primary">Изменить</a></td>
+            <td><a href="{% url 'PlaceDelete' Parkings.pk %}" class="btn btn-danger">Удалить</a></td>
             {% endif %}
 
-        </li>
+    </tr>
     {% endfor %}
-</ul>
+    </tbody>
+</table>
 {% if manager %}
-    <p><a href="{% url 'PlaceAdd' %}">Добавить</a></p>
+    <p><a href="{% url 'PlaceAdd' %}" class="btn btn-primary">Добавить</a></p>
 {% endif %}
 
 

@@ -2,11 +2,11 @@
 
 {% block content %}
 
-<h2>Парковочные места</h2>
+<h2>Добавить парковочное место</h2>
 
 <form method="post">{% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" value="Save">
+    <input type="submit" value="Сохранить" class="btn btn-primary">
 </form>
 
 

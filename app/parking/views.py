@@ -1,12 +1,11 @@
-from typing import List
-from django.db.models.sql.where import OR
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, \
+    CreateView, UpdateView, DeleteView
 from .models import Parkings, ParkingsTime
-from .forms import ParkingReservationForm
+from .forms import ParkingReservationForm, \
+    ParkingTimeUpdateForm, ParkingUpdateForm, ParkingAddForm
 from datetime import datetime
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -14,56 +13,52 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 
 @method_decorator(login_required, name='dispatch')
 class Index(UserPassesTestMixin, ListView):
+    """Home page view"""
     model = Parkings
     template_name = "parking/index.html"
 
     def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
         manager = self.request.user.groups.filter(name='Manager').exists()
         context['manager'] = manager
         return context
 
     def test_func(self):
-        if self.request.user.groups.filter(name='Manager').exists() or self.request.user.groups.filter(name='Employee').exists():
+        if self.request.user.groups.filter(name='Manager').exists() \
+           or self.request.user.groups.filter(name='Employee').exists():
             result = True
         else:
             result = False
         return result
 
-    
+
 @method_decorator(login_required, name='dispatch')
 class ParkingDetal(UserPassesTestMixin, DetailView):
+    """View for creating and displaying the pre-programmed time"""
     model = Parkings
     template_name = "parking/parkingDetal.html"
 
     def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
         id_parking = context['object'].id
-        context['ParkingsTimeList'] = ParkingsTime.objects.filter(parkingName_id__exact=id_parking)
+        context['ParkingsTimeList'] = ParkingsTime.objects. \
+            filter(parkingName_id__exact=id_parking)
         form = ParkingReservationForm()
         form.fields['parking_id'].label = ''
         form.fields['parking_id'].initial = id_parking
         context['parkingReservationForm'] = form
         manager = self.request.user.groups.filter(name='Manager').exists()
-        context['manager'] = manager     
+        context['manager'] = manager
         employee = self.request.user.groups.filter(name='Employee').exists()
         context['employee'] = employee
+        if 'statusAdd' in self.request.session:
+            context['statusAdd'] = self.request.session['statusAdd']
+            del self.request.session['statusAdd']
         return context
-    
-
-    #def post(self, request, *args, **kwargs):
-    #    self.object = self.get_object()
-    #    form = self.get_form()
-    #    if form.is_valid():
-    #        return self.form_valid(form)
-    #    else:
-    #        return self.form_invalid(form)
-
 
     def test_func(self):
-        if self.request.user.groups.filter(name='Manager').exists() or self.request.user.groups.filter(name='Employee').exists():
+        if self.request.user.groups.filter(name='Manager').exists() \
+           or self.request.user.groups.filter(name='Employee').exists():
             result = True
         else:
             result = False
@@ -72,13 +67,13 @@ class ParkingDetal(UserPassesTestMixin, DetailView):
 
 @method_decorator(login_required, name='dispatch')
 class ParkingTimeCreate(CreateView):
+    """Time reservation"""
     model = ParkingsTime
-    fields = ['starDateTime', 'stopDateTime',]
+    fields = ['starDateTime', 'stopDateTime', ]
 
     template_name = 'parking/parkingDetal.html'
 
     def get(self, request, *args, **kwargs):
-        #print('+++++++========='+str(form['parking_id'].value()))
         return redirect('home')
 
     def post(self, request, *args, **kwargs):
@@ -88,14 +83,20 @@ class ParkingTimeCreate(CreateView):
             parkingTime = ParkingsTime()
             parkingTime.user = request.user
             parkingTime.parkingName = Parkings.objects.get(id=parkings_id)
-            starDateTimeStr = '{} {}'.format(form['startDate'].value(), form['startTime'].value())
-            stopDateTimeStr = '{} {}'.format(form['stopDate'].value(), form['stopTime'].value())
-            print('dsfgdsf' + starDateTimeStr)
-            parkingTime.starDateTime = datetime.strptime(starDateTimeStr, '%Y-%m-%d %H:%M')
-            parkingTime.stopDateTime = datetime.strptime(stopDateTimeStr, '%Y-%m-%d %H:%M')
+            starDateTimeStr = '{} {}'.format(form['startDate'].value(),
+                                             form['startTime'].value())
+            stopDateTimeStr = '{} {}'.format(form['stopDate'].value(),
+                                             form['stopTime'].value())
+            parkingTime.starDateTime = datetime.strptime(starDateTimeStr,
+                                                         '%Y-%m-%d %H:%M')
+            parkingTime.stopDateTime = datetime.strptime(stopDateTimeStr,
+                                                         '%Y-%m-%d %H:%M')
             parkingTime.save()
-        #return redirect('parking/' + str(parkings_id))
-        return redirect(reverse('home'))
+            request.session['statusAdd'] = 'Место забронированно'
+            return redirect(reverse('ParkingDetal', args=[parkings_id]))
+        else:
+            request.session['statusAdd'] = form.errors['__all__'][0]
+            return redirect(reverse('ParkingDetal', args=[parkings_id]))
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -104,50 +105,57 @@ class ParkingTimeCreate(CreateView):
 
 @method_decorator(login_required, name='dispatch')
 class ParkingCreate(UserPassesTestMixin, CreateView):
+    """Creating a parking space"""
     model = Parkings
-    fields = ['parkingName', 'description',]
+    form_class = ParkingAddForm
 
     template_name = 'parking/parkingPlaceAdd.html'
 
     def test_func(self):
         return self.request.user.groups.filter(name='Manager').exists()
 
+
 @method_decorator(login_required, name='dispatch')
 class ParkingUpdate(UserPassesTestMixin, UpdateView):
+    """View for changing parking space"""
     model = Parkings
-    fields = ['parkingName', 'description',]
     template_name = 'parking/parkingPlaceEdit.html'
+    form_class = ParkingUpdateForm
     success_url = reverse_lazy('home')
 
     def test_func(self):
         return self.request.user.groups.filter(name='Manager').exists()
 
+
 @method_decorator(login_required, name='dispatch')
 class ParkingDelete(UserPassesTestMixin, DeleteView):
+    """View to remove parking space"""
     model = Parkings
     template_name = 'parking/parkingPlaceDelete.html'
     success_url = reverse_lazy('home')
 
-
     def test_func(self):
         return self.request.user.groups.filter(name='Manager').exists()
-
-    #def get(self, request, *args, **kwargs):
-    #    user = self.request.user
-    #    self.object = self.get_object()
-    #    context = self.get_context_data(object=self.object)
-    #    return self.render_to_response(context)
-
 
 
 @method_decorator(login_required, name='dispatch')
 class ParkingTimeUpdate(UserPassesTestMixin, UpdateView):
+    """Browsing change view"""
     model = ParkingsTime
-    fields = ['starDateTime', 'stopDateTime',]
-    template_name = 'parking/parkingPlaceEdit.html'
+    template_name = 'parking/parkingTimeEdit.html'
+    form_class = ParkingTimeUpdateForm
     success_url = reverse_lazy('home')
 
     def test_func(self):
         return self.request.user.groups.filter(name='Manager').exists()
 
-    
+
+@method_decorator(login_required, name='dispatch')
+class ParkingTimeDelete(UserPassesTestMixin, DeleteView):
+    """Browsing Removal View"""
+    model = ParkingsTime
+    template_name = 'parking/parkingTimeDelete.html'
+    success_url = reverse_lazy('home')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='Manager').exists()
